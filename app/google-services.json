@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "808660963218",
+    "firebase_url": "https://fizyoterapi-c4663-default-rtdb.firebaseio.com",
+    "project_id": "fizyoterapi-c4663",
+    "storage_bucket": "fizyoterapi-c4663.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:808660963218:android:97eda91385b361b9663b4b",
+        "android_client_info": {
+          "package_name": "com.example.fizyoterapi"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCMFJEb_xEBQUmd7O4CccaGf-eI6lZ_V7s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
