@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import '../fragments/hasta_list_fragment.dart';
 import '../fragments/settings_fragment.dart';
+import 'login_screen.dart'; // Çıkış yapınca dönülecek ekran
 
 class DoctorNavigationScreen extends StatefulWidget {
   const DoctorNavigationScreen({super.key});
@@ -14,64 +15,75 @@ class DoctorNavigationScreen extends StatefulWidget {
 class _DoctorNavigationScreenState extends State<DoctorNavigationScreen> {
   int _selectedIndex = 0;
   
-  // Doktornavigasyon.kt'deki replaceFragment mantığının karşılığı
-  final List<Widget> _fragments = [
-    const HastaListFragment(), // nav_home'a tıklandığında yüklenir
-    const SettingsFragment(),  // nav_setting'e tıklandığında yüklenir
+  // Menüdeki sayfalar
+  final List<Widget> _pages = [
+    const HastaListFragment(),
+    const SettingsFragment(),
+  ];
+
+  // Sayfa başlıkları
+  final List<String> _titles = [
+    "Hastalarım",
+    "Ayarlar"
   ];
 
   void _onItemTapped(int index) {
-    if (index == 2) { // Exit (Çıkış)
-      _handleExit();
+    if (index == 2) { // Çıkış İndeksi
+      _handleLogout();
       return;
     }
     setState(() {
       _selectedIndex = index;
     });
-    Navigator.of(context).pop(); // Drawer'ı kapat
+    Navigator.of(context).pop(); // Menüyü kapat
   }
   
-  void _handleExit() {
-    // finish() karşılığı, Login ekranına döner
-    Navigator.of(context).popUntil((route) => route.isFirst); 
+  void _handleLogout() {
+    // Çıkış yap ve Login ekranına dön
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (Route<dynamic> route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Doktor Paneli'),
-        // activity_doktornavigasyon.xml'deki @color/orange
-        backgroundColor: const Color(0xFFFF9800), 
+        title: Text(_titles[_selectedIndex]),
+        backgroundColor: const Color(0xFFFF9800),
+        foregroundColor: Colors.white,
       ),
-      // Fragment Container'ın karşılığı
-      body: _fragments[_selectedIndex], 
+      body: _pages[_selectedIndex], 
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            // nav_header.xml'in karşılığı
             const UserAccountsDrawerHeader( 
-              accountName: Text('Eyyüp Yılmaz'),
-              accountEmail: Text('eyyup@example.com'),
+              accountName: Text('Doktor Paneli'),
+              accountEmail: Text('Hoşgeldiniz'),
+              currentAccountPicture: CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.medical_services, color: Color(0xFFFF9800)),
+              ),
               decoration: BoxDecoration(color: Color(0xFFFF9800)),
             ),
             ListTile(
-              leading: const Icon(Icons.group),
-              title: const Text('Hastalarım (Home)'), // nav_home
+              leading: const Icon(Icons.people),
+              title: const Text('Hastalarım'),
               selected: _selectedIndex == 0,
               onTap: () => _onItemTapped(0),
             ),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Ayarlar'), // nav_setting
+              title: const Text('Ayarlar'),
               selected: _selectedIndex == 1,
               onTap: () => _onItemTapped(1),
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.exit_to_app),
-              title: const Text('Çıkış'), // nav_exit
+              leading: const Icon(Icons.exit_to_app, color: Colors.red),
+              title: const Text('Çıkış Yap', style: TextStyle(color: Colors.red)),
               onTap: () => _onItemTapped(2),
             ),
           ],

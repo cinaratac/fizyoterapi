@@ -1,20 +1,19 @@
-// lib/services/database_helper.dart (DÜZELTİLMİŞ VE KESİN ÇÖZÜM)
+// lib/services/database_helper.dart (TAM VE DÜZELTİLMİŞ)
 
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+// Kotlin'deki private val'lerin Dart'taki karşılığı
+const _databaseName = "DATA_FİZYO";
+const _tableHasta = 'HASTALAR';
+const _tableDoktor = 'DOKTORLAR';
+const _columnPhone = 'phone';
+const _columnPassword = 'password';
+const _columnSure = 'ekran_süresi';
+const _columnId = 'id';
+
 class DatabaseHelper {
-  static const _databaseName = "DATA_FİZYO";
-  static const _databaseVersion = 1;
-
-  static const tableHasta = 'HASTALAR';
-  static const tableDoktor = 'DOKTORLAR';
-
-  static const columnPhone = 'phone';
-  static const columnPassword = 'password';
-  static const columnSure = 'ekran_süresi';
-  static const columnId = 'id';
-
+  
   DatabaseHelper._privateConstructor();
   static final DatabaseHelper instance = DatabaseHelper._privateConstructor();
 
@@ -25,69 +24,76 @@ class DatabaseHelper {
     return _database!;
   }
 
-  _initDatabase() async {
+  Future<Database> _initDatabase() async {
+    // Veritabanı dosya yolu
     String path = join(await getDatabasesPath(), _databaseName);
-    return await openDatabase(path,
-        version: _databaseVersion,
-        onCreate: _onCreate);
+    return await openDatabase(
+      path,
+      version: 1,
+      onCreate: _onCreate,
+    );
   }
 
+  // onCreate: Tabloları oluşturma
   Future _onCreate(Database db, int version) async {
     await db.execute('''
-          CREATE TABLE $tableHasta (
-            $columnId INTEGER PRIMARY KEY AUTOINCREMENT,
-            $columnPhone TEXT NOT NULL,
-            $columnSure TEXT,
-            $columnPassword TEXT NOT NULL
+          CREATE TABLE $_tableHasta(
+            $_columnId INTEGER PRIMARY KEY AUTOINCREMENT,
+            $_columnPhone TEXT NOT NULL, 
+            $_columnSure TEXT,
+            $_columnPassword TEXT NOT NULL
           )
           ''');
     await db.execute('''
-          CREATE TABLE $tableDoktor (
-            $columnPhone TEXT NOT NULL,
-            $columnPassword TEXT NOT NULL
+          CREATE TABLE $_tableDoktor(
+            $_columnPhone TEXT NOT NULL, 
+            $_columnPassword TEXT NOT NULL
           )
           ''');
   }
-
-  Future<int> insertHasta(String phone, String password) async {
-    final db = await instance.database; // db tanımlı
-    return await db.insert(tableHasta, {columnPhone: phone, columnPassword: password});
+  
+  // 1. insertHasta: Hasta kaydı ekler.
+  Future<void> insertHasta(String phone, String password) async {
+    final db = await instance.database;
+    await db.insert(_tableHasta, {_columnPhone: phone, _columnPassword: password});
   }
 
+  // 2. insertDoktor: Doktor kaydı ekler.
+  Future<void> insertDoktor(String phone, String password) async {
+    final db = await instance.database;
+    await db.insert(_tableDoktor, {_columnPhone: phone, _columnPassword: password});
+  }
+
+  // 3. checkHasta: Hasta girişini kontrol eder.
   Future<bool> checkHasta(String phone, String password) async {
-    final db = await instance.database; // db tanımlı
+    final db = await instance.database;
     List<Map> result = await db.query(
-      tableHasta,
-      columns: [columnPhone],
-      where: '$columnPhone = ? AND $columnPassword = ?',
+      _tableHasta,
+      where: '$_columnPhone = ? AND $_columnPassword = ?',
       whereArgs: [phone, password],
     );
     return result.isNotEmpty;
-  }
-  
-  Future<int> insertDoktor(String phone, String password) async {
-    final db = await instance.database; // db tanımlı
-    return await db.insert(tableDoktor, {columnPhone: phone, columnPassword: password});
   }
 
+  // 4. checkDoktor: Doktor girişini kontrol eder.
   Future<bool> checkDoktor(String phone, String password) async {
-    final db = await instance.database; // db tanımlı
+    final db = await instance.database;
     List<Map> result = await db.query(
-      tableDoktor,
-      columns: [columnPhone],
-      where: '$columnPhone = ? AND $columnPassword = ?',
+      _tableDoktor,
+      where: '$_columnPhone = ? AND $_columnPassword = ?',
       whereArgs: [phone, password],
     );
     return result.isNotEmpty;
   }
-  
-  // ⭐️ HATA DÜZELTİLDİ: 'db' değişkeni tanımlandı
+
+  // 5. getAllHastaPhones: Tüm hasta telefon numaralarını çeker.
   Future<List<String>> getAllHastaPhones() async {
-    final db = await instance.database; // Eksik olan satır eklendi.
-    final List<Map<String, dynamic>> maps = await db.query(tableHasta, columns: [columnPhone]);
+    final db = await instance.database;
+    final List<Map<String, dynamic>> maps = await db.query(_tableHasta, columns: [_columnPhone]);
     
+    // Sadece telefon numaralarını içeren bir liste döndürür
     return List.generate(maps.length, (i) {
-      return maps[i][columnPhone] as String;
+      return maps[i][_columnPhone] as String;
     });
   }
 }

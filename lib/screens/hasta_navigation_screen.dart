@@ -1,11 +1,12 @@
 // lib/screens/hasta_navigation_screen.dart
-import '../fragments/recycler_fragment.dart';
+
 import 'package:flutter/material.dart';
+import '../fragments/recycler_fragment.dart';
 import '../fragments/settings_fragment.dart';
 import 'hasta_movement_screen.dart'; 
+import 'login_screen.dart';
 
 class HastaNavigationScreen extends StatefulWidget {
-  // Giriş/Login ekranından gelen hasta telefon numarasını tutar
   final String userPhone;
 
   const HastaNavigationScreen({super.key, required this.userPhone});
@@ -16,80 +17,83 @@ class HastaNavigationScreen extends StatefulWidget {
 
 class _HastaNavigationScreenState extends State<HastaNavigationScreen> {
   int _selectedIndex = 0;
+  late final List<Widget> _pages;
+  late final List<String> _titles;
 
-  // Navigasyon menüsündeki seçeneklere karşılık gelen Widget'lar (Fragment'lar)
-  late final List<Widget> _fragments;
-
- @override
+  @override
   void initState() {
     super.initState();
-    // Fragment listesini, kullanıcı telefon numarasını hareket ekranına geçirerek başlat
-    _fragments = [
-      // Index 0: Hareket Takibi (Home, varsayılan)
-      HastaMovementScreen(userPhone: widget.userPhone), 
-      
-      // Index 1: Hareket Listesi (Gallery) -> RecyclerFragment
-      RecyclerFragment(userPhone: widget.userPhone), 
-      
-      // Index 2: Ayarlar Fragment
-      const SettingsFragment(),
+    _pages = [
+      HastaMovementScreen(userPhone: widget.userPhone), // Ana Sayfa: Hareket
+      RecyclerFragment(userPhone: widget.userPhone),    // Galeri: Egzersiz Listesi
+      const SettingsFragment(),                         // Ayarlar
     ];
+    _titles = ["Hareket Takibi", "Egzersiz Listesi", "Ayarlar"];
   }
 
   void _onItemTapped(int index) {
+    if (index == 3) { // Çıkış
+        _handleLogout();
+        return;
+    }
     setState(() {
       _selectedIndex = index;
     });
-    Navigator.of(context).pop(); // Drawer'ı kapat
+    Navigator.of(context).pop();
   }
-  
-  void _handleExit() {
-    // Exit Activity'nin karşılığı: Login ekranına dön
-    Navigator.of(context).popUntil((route) => route.isFirst); 
+
+  void _handleLogout() {
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (context) => const LoginScreen()),
+      (Route<dynamic> route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Hasta Paneli'),
+        title: Text(_titles[_selectedIndex]),
         backgroundColor: const Color(0xFFFF9800),
+        foregroundColor: Colors.white,
       ),
-      // Fragment Container'ın karşılığı
-      body: _fragments[_selectedIndex], 
+      body: _pages[_selectedIndex],
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            // hasta_header.xml'in karşılığı
             UserAccountsDrawerHeader( 
               accountName: Text('Hasta: ${widget.userPhone}'),
               accountEmail: const Text('Fizyoterapi Takip Sistemi'),
+              currentAccountPicture: const CircleAvatar(
+                backgroundColor: Colors.white,
+                child: Icon(Icons.person, color: Color(0xFFFF9800)),
+              ),
               decoration: const BoxDecoration(color: Color(0xFFFF9800)),
             ),
             ListTile(
-              leading: const Icon(Icons.fitness_center),
-              title: const Text('Hareket Takibi (Home)'), // nav_home
+              leading: const Icon(Icons.timer),
+              title: const Text('Hareket Takibi (Home)'),
               selected: _selectedIndex == 0,
               onTap: () => _onItemTapped(0),
             ),
             ListTile(
               leading: const Icon(Icons.list),
-              title: const Text('Hareket Listesi (Gallery)'), // nav_gallery
+              title: const Text('Egzersiz Listesi (Galeri)'),
               selected: _selectedIndex == 1,
               onTap: () => _onItemTapped(1),
             ),
             ListTile(
               leading: const Icon(Icons.settings),
-              title: const Text('Ayarlar'), // nav_settings
+              title: const Text('Ayarlar'),
               selected: _selectedIndex == 2,
               onTap: () => _onItemTapped(2),
             ),
             const Divider(),
             ListTile(
-              leading: const Icon(Icons.exit_to_app),
-              title: const Text('Çıkış'), // nav_exit
-              onTap: _handleExit,
+              leading: const Icon(Icons.exit_to_app, color: Colors.red),
+              title: const Text('Çıkış'),
+              onTap: () => _onItemTapped(3),
             ),
           ],
         ),

@@ -2,54 +2,77 @@
 
 import 'package:flutter/material.dart';
 import '../services/database_helper.dart';
-import '../models/data_models.dart';
-import '../screens/hasta_info_screen.dart'; // Yeni oluşturulacak
+import '../screens/hasta_info_screen.dart';
 
-class HastaListFragment extends StatelessWidget {
+class HastaListFragment extends StatefulWidget {
   const HastaListFragment({super.key});
 
-  // Hasta listesini çeken ve gösteren yapı
+  @override
+  State<HastaListFragment> createState() => _HastaListFragmentState();
+}
+
+class _HastaListFragmentState extends State<HastaListFragment> {
+  final DatabaseHelper db = DatabaseHelper.instance;
+
   @override
   Widget build(BuildContext context) {
-    final db = DatabaseHelper.instance;
-
-    return FutureBuilder<List<String>>(
-      // Tüm hasta telefonlarını çek
-      future: db.getAllHastaPhones(), 
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text('Hata: ${snapshot.error}'));
-        }
-        
-        final phoneList = snapshot.data ?? [];
-        
-        if (phoneList.isEmpty) {
-          return const Center(child: Text('Kayıtlı hasta bulunmamaktadır.'));
-        }
-
-        // RecyclerView/Adapter mantığı burada ListView.builder ile uygulanır
-        return ListView.builder(
-          itemCount: phoneList.length,
-          itemBuilder: (context, index) {
-            final phone = phoneList[index];
-            final hastaData = HastaData(image: 0, title: phone); // image sabit, title phone numarası
-            
-            return ListTile(
-              leading: const Icon(Icons.person, color: Colors.blue), // ic_launcher_background yerine basit icon
-              title: Text(hastaData.title), // itemEditTextHasta
-              onTap: () {
-                // Tıklama olayı: hastabilgi Activity'ye yönlendirme
-                Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => HastaInfoScreen(phone: phone),
-                ));
-              },
+    return Scaffold(
+      // FutureBuilder ile veritabanından verilerin gelmesini bekliyoruz
+      body: FutureBuilder<List<String>>(
+        future: db.getAllHastaPhones(), 
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Bir hata oluştu: ${snapshot.error}'));
+          }
+          
+          final phoneList = snapshot.data ?? [];
+          
+          if (phoneList.isEmpty) {
+            return const Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.person_off, size: 64, color: Colors.grey),
+                  SizedBox(height: 16),
+                  Text('Henüz kayıtlı hasta yok.', style: TextStyle(fontSize: 18, color: Colors.grey)),
+                ],
+              ),
             );
-          },
-        );
-      },
+          }
+
+          return ListView.builder(
+            itemCount: phoneList.length,
+            itemBuilder: (context, index) {
+              final phone = phoneList[index];
+              
+              return Card(
+                elevation: 3,
+                margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                child: ListTile(
+                  leading: const CircleAvatar(
+                    backgroundColor: Colors.orange,
+                    child: Icon(Icons.person, color: Colors.white),
+                  ),
+                  title: Text(
+                    phone, 
+                    style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w500),
+                  ),
+                  subtitle: const Text("Detaylar için tıklayın"),
+                  onTap: () {
+                    // Hastanın detay sayfasına git
+                    Navigator.of(context).push(MaterialPageRoute(
+                      builder: (context) => HastaInfoScreen(phone: phone),
+                    ));
+                  },
+                ),
+              );
+            },
+          );
+        },
+      ),
     );
   }
 }
