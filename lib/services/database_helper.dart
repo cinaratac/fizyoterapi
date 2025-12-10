@@ -1,9 +1,7 @@
-// lib/services/database_helper.dart (TAM VE DÜZELTİLMİŞ)
+/
 
 import 'package:sqflite/sqflite.dart';
-import 'package:path/path.dart';
-
-// Kotlin'deki private val'lerin Dart'taki karşılığı
+import 'package:path/path
 const _databaseName = "DATA_FİZYO";
 const _tableHasta = 'HASTALAR';
 const _tableDoktor = 'DOKTORLAR';
@@ -51,20 +49,19 @@ class DatabaseHelper {
           )
           ''');
   }
-  
-  // 1. insertHasta: Hasta kaydı ekler.
+
+
   Future<void> insertHasta(String phone, String password) async {
     final db = await instance.database;
     await db.insert(_tableHasta, {_columnPhone: phone, _columnPassword: password});
   }
 
-  // 2. insertDoktor: Doktor kaydı ekler.
   Future<void> insertDoktor(String phone, String password) async {
     final db = await instance.database;
     await db.insert(_tableDoktor, {_columnPhone: phone, _columnPassword: password});
   }
 
-  // 3. checkHasta: Hasta girişini kontrol eder.
+
   Future<bool> checkHasta(String phone, String password) async {
     final db = await instance.database;
     List<Map> result = await db.query(
@@ -75,7 +72,7 @@ class DatabaseHelper {
     return result.isNotEmpty;
   }
 
-  // 4. checkDoktor: Doktor girişini kontrol eder.
+
   Future<bool> checkDoktor(String phone, String password) async {
     final db = await instance.database;
     List<Map> result = await db.query(
@@ -86,7 +83,7 @@ class DatabaseHelper {
     return result.isNotEmpty;
   }
 
-  // 5. getAllHastaPhones: Tüm hasta telefon numaralarını çeker.
+
   Future<List<String>> getAllHastaPhones() async {
     final db = await instance.database;
     final List<Map<String, dynamic>> maps = await db.query(_tableHasta, columns: [_columnPhone]);
@@ -94,6 +91,3 @@ class DatabaseHelper {
     // Sadece telefon numaralarını içeren bir liste döndürür
     return List.generate(maps.length, (i) {
       return maps[i][_columnPhone] as String;
-    });
-  }
-}
